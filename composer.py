@@ -1,4 +1,5 @@
 import datetime
+import heapq
 import json
 import os
 import math
@@ -32,19 +33,21 @@ class Composer:
                 continue
             with open(f"{self.question_path}/{file}", "r") as f:
                 questions = json.load(f)
-                for dup_qid in duplicate_keys:
-                    for qid, question in questions.items():
+                for qid, question in questions.items():
+                    ids_to_remove = []
+                    for dup_qid in duplicate_keys:
                         if qid == dup_qid:
                             continue
                         if (
                             question["creation_date"]
                             >= duplicates[dup_qid]["creation_date"]
                         ):
-                            break
+                            ids_to_remove.append(dup_qid)
+                            continue
                         sim_scores = self.processer.calculate_similarity(
                             duplicates[dup_qid], question
                         )
-                        self.duplicate_map[dup_qid]["scores"].append(
+                        self.duplicate_map[dup_qid]["scores"].push(
                             {
                                 "qid": qid,
                                 "title_score": sim_scores["title"],
@@ -53,6 +56,13 @@ class Composer:
                                 "topic_score": sim_scores["topics"],
                             }
                         )
+
+                        if len(self.duplicate_map[dup_qid]["scores"]) >= self.K:
+                            self.duplicate_map[dup_qid]["scores"].pop()
+
+                    duplicate_keys = [
+                        x for x in duplicate_keys if (x not in ids_to_remove)
+                    ]
 
     def param_estimation(self):
         best_params = [], best_score = 0
@@ -68,7 +78,7 @@ class Composer:
 
                 for j in range(0, 1.01, 0.01):
                     duplicate_question_score = {
-                        id: [] for id in self.duplicate_map.keys()
+                        id: heapq([]) for id in self.duplicate_map.keys()
                     }
                     for dup_id in self.duplicate_map.keys():
                         for score_obj in self.duplicate_map[dup_id]["scores"]:
@@ -78,8 +88,8 @@ class Composer:
                                 + score_obj["topic_score"] * params[2]
                                 + score_obj["tag_score"] * params[3]
                             )
-                            duplicate_question_score[dup_id].append(
-                                (score_obj["qid"], composer_score)
+                            duplicate_question_score[dup_id].push(
+                                (composer_score, score_obj["qid"])
                             )
                     score = self.evalution_criteria(duplicate_question_score)
                     if score > best_score:
