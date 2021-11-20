@@ -15,8 +15,10 @@ class Preprocess:
         with open(f'{self.DATADIR}/0.json', 'r') as f:
             self.questions = json.load(f)
         self.cleaned_question = {}
-        self.punc_string = "!|\(|\)|-|\[|\]|\{|\}|;|:|'|\"|\|,|<|>|/|\?|@|=|\$|%|^|&|\*|\+|_|~"
+        self.punc_string = r"!|\(|\)|-|\[|\]|\{|\}|;|:|'|\"|<|>|\/|\?|@|=|\$|%|\^|&|\*|\+|_|~|\.|\,|\\"
+        self.space_string = r"/\s\s+/g"
         self.punc_regex = re.compile(self.punc_string)
+        self.space_regex = re.compile(self.space_string)
         self.do_lemmatization = do_lemmatization
         self.remove_small_word = remove_small_word
 
@@ -41,6 +43,7 @@ class Preprocess:
         text = text.lower()
         # tokenized_text = word_tokenize(text)
         text = self.punc_regex.sub(' ', text)
+        text = self.space_regex.sub(' ', text).strip()
         tokenized_text = text.split()
         if self.do_lemmatization:
             tokenized_text = self.lemmatizing(tokenized_text, pos='v')

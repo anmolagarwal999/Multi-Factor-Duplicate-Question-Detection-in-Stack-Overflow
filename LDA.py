@@ -31,10 +31,14 @@ class LDA:
         """preprocess text and create dictionary"""
 
         for file in os.listdir(self.data_path):
+            if "json" not in file:
+                continue
             with open(f'{self.data_path}/{file}', 'r') as f:
                 questions = json.load(f)
+                # print(type(questions))
+                # print(questions.keys())
                 _processed_docs = [self.processing.parse_string(" ".join([question["body"], question["title"]])) for
-                                   question in questions]
+                                   key, question in questions.items()]
                 with open(f"{self.preprocessing_path}/{file}", 'w') as fd:
                     json.dump(_processed_docs, fd)
 
@@ -53,12 +57,13 @@ class LDA:
             self.dictionary = Dictionary.load_from_text(self.dict_filename)
 
         for file in os.listdir(self.preprocessing_path):
+            if "json" not in file:
+                continue
             with open(f'{self.preprocessing_path}/{file}', 'r') as f:
                 processed_docs = json.load(f)
                 bow_corpus = [self.dictionary.doc2bow(doc) for doc in processed_docs]
                 if self.lda_model is None:
-                    self.lda_model = LdaMulticore(bow_corpus, num_topics=self.K, id2word=self.dictionary, passes=2,
-                                                  workers=2)
+                    self.lda_model = LdaMulticore(bow_corpus, num_topics=self.K, id2word=self.dictionary, workers=3)
                 else:
                     self.lda_model.update(bow_corpus)
 
@@ -71,22 +76,20 @@ class LDA:
             self.lda_model = LdaMulticore.load(self.lda_file)
 
         for file in os.listdir(self.data_path):
+            if "json" not in file:
+                continue
             with open(f'{self.data_path}/{file}', 'r') as f:
                 questions = json.load(f)
                 with open(f'{self.preprocessing_path}/{file}', 'r') as fp:
                     processed_docs = json.load(fp)
-                    questions = [
-                        question.update({"topic": self.lda_model[self.dictionary.doc2bow(processed_docs[index])]})
-                        for index, question in enumerate(questions)]
+                    [questions[question].update(
+                        {"topic": [float(score) for index, score in
+                                   self.lda_model.get_document_topics(self.dictionary.doc2bow(processed_docs[index]),
+                                                                      minimum_probability=0.0)]})
+                        for index, question
+                        in enumerate(questions)]
                     with open(f'{self.storage_path}/{file}', 'w') as fd:
                         json.dump(questions, fd)
-
-
-# def cosine_similarity(self, q_index_1: int, q_index_2: int) -> float:
-#     """q_index are the indexes of the questions in the bag pf words corpus"""
-#     similarity = self.processing.cosine_similarity(self.lda_model[self.bow_corpus[q_index_1]],
-#                                                    self.lda_model[self.bow_corpus[q_index_2]])
-#     return similarity
 
 
 if __name__ == "__main__":
