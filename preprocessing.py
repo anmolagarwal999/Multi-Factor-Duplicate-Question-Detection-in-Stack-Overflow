@@ -48,7 +48,7 @@ class Preprocess:
 
     def parse_string(self, text: str) -> list:
         """text cleaning and preprocessing"""
-
+        # print(text)
         text = text.lower()
         text = self.punc_regex.sub(" ", text)
         text = self.space_regex.sub(" ", text).strip()
@@ -63,21 +63,23 @@ class Preprocess:
         """Provide 2 questions and it will return the 4 cosine similarities b/w each components"""
 
         similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0}
-        keys = ["title", "body", "tags", "topics"]
+        keys = ["title_vec", "body_vec", "tags_list", "topic"]
+        # print("dict received is ", question_1)
         for key in keys:
-            if key == "title":
+            if key == "title_vec":
                 similarities["title"] = self.merge_bog(
-                    self.parse_string(question_1[key]),
-                    self.parse_string(question_2[key]),
+                    question_1[key], question_2[key]
                 )
-            elif key == "body":
+            elif key == "body_vec":
                 similarities["body"] = self.merge_bog(
-                    self.parse_string(question_1[key]),
-                    self.parse_string(question_2[key]),
+                    question_1[key], question_2[key]
                 )
-            elif key == "tags":
+            elif key == "tags_list":
                 similarities["tags"] = self.merge_bog(question_1[key], question_2[key])
-            elif key == "topics":
+            elif key == "topic":
+                # print("COol stuff")
+                # print(question_1[key])
+                # print(question_1[key])
                 similarities["topics"] = self.cosine_similarity(
                     question_1[key], question_2[key]
                 )
