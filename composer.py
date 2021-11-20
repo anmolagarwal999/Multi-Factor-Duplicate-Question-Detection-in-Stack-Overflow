@@ -17,7 +17,7 @@ class Composer:
         self.question_path = question_path
         self.processer = Preprocess()
         self.iterations = 10
-        self.duplicate_map = {}
+        self.dup_score_details = {}
         self.N = 2 # number of dups to be considered
         self.K = 20 # recall
 
@@ -33,71 +33,76 @@ class Composer:
 
         # change this to adjust for ordered dict
         activate_dup_keys = list(list_of_dups.keys())[: self.N]
-        self.duplicate_map = {
-            qid: {"actual_questions": list_of_dups[qid]["dups_list"], "scores": []}
+
+        # store a dictionary with 3 things
+        self.dup_score_details = {
+            qid: {"expected_questions": list_of_dups[qid]["dups_list"], "scores": []}
             for qid in activate_dup_keys
         }
 
-        for file in os.listdir(self.question_path):
-            if "json" not in file:
-                continue
-            print("curr file to be used is ", file)
-            with open(f"{self.question_path}/{file}", "r") as f:
+        for curr_dup_id in activate_dup_keys:
+            print("Id of dup question being ivestigated is ", curr_dup_id)
+            print(f"This q has {len(list_of_dups[qid]["dups_list"])}")
 
-                # 0.json = 50 sorted elements
-                # 0th duplicate = 25th 
-                #1st dup = 38th position
-                # candidate questions
+            for file in os.listdir(self.question_path):
+                if "json" not in file:
+                    continue
+                print("curr file to be used is ", file)
+                with open(f"{self.question_path}/{file}", "r") as f:
 
-                # load all 50
-                questions = json.load(f)
+                    # 0.json = 50 sorted elements
+                    # 0th duplicate = 25th 
+                    #1st dup = 38th position
+                    # candidate questions
 
-                # load all candidates
+                    # load all 50
+                    candidate_questions = json.load(f)
 
-
-                # iterate through all candidates
-
-
-                
-                for qid, question in questions.items():
-
-                    # 
-                    ids_to_remove = []
-
-                    # run twice
-                    # iterate through all list_of_dups
-                    for dup_qid in activate_dup_keys:
-                        if qid == dup_qid:
-                            continue
-
-                        # not a valid contender
-                        if (
-                            question["creation_date"]
-                            >= list_of_dups[dup_qid]["creation_date"]
-                        ):
-                            ids_to_remove.append(dup_qid)
-                            continue
+                    # load all candidates
 
 
-                        sim_scores = self.processer.calculate_similarity(
-                            list_of_dups[dup_qid], question
-                        )
-                        self.duplicate_map[dup_qid]["scores"].push(
-                            {
-                                "qid": qid,
-                                "title_score": sim_scores["title"],
-                                "body_score": sim_scores["body"],
-                                "tag_score": sim_scores["tag"],
-                                "topic_score": sim_scores["topics"],
-                            }
-                        )
+                    # iterate through all candidates
 
-                        # if len(self.duplicate_map[dup_qid]["scores"]) >= self.K:
-                        #     self.duplicate_map[dup_qid]["scores"].pop()
 
-                    activate_dup_keys = [
-                        x for x in activate_dup_keys if (x not in ids_to_remove)
-                    ]
+                    
+                    for can_qid, can_question in candidate_questions.items():
+
+                        ids_to_remove = []
+
+                        # run twice
+                        # iterate through all list_of_dups
+                        for dup_qid in activate_dup_keys:
+                            if qid == dup_qid:
+                                continue
+
+                            # not a valid contender
+                            if (
+                                question["creation_date"]
+                                >= list_of_dups[dup_qid]["creation_date"]
+                            ):
+                                ids_to_remove.append(dup_qid)
+                                continue
+
+
+                            sim_scores = self.processer.calculate_similarity(
+                                list_of_dups[dup_qid], question
+                            )
+                            self.dup_score_details[dup_qid]["scores"].push(
+                                {
+                                    "qid": qid,
+                                    "title_score": sim_scores["title"],
+                                    "body_score": sim_scores["body"],
+                                    "tag_score": sim_scores["tag"],
+                                    "topic_score": sim_scores["topics"],
+                                }
+                            )
+
+                            # if len(self.dup_score_details[dup_qid]["scores"]) >= self.K:
+                            #     self.dup_score_details[dup_qid]["scores"].pop()
+
+                        activate_dup_keys = [
+                            x for x in activate_dup_keys if (x not in ids_to_remove)
+                        ]
 
     def cal_param_scores_for_a_question(self, four_params, scores_dict):
         # dup_id=id_of_dup_q
@@ -159,13 +164,13 @@ class Composer:
                 for j in range(0, 1.01, 0.01):
                     params[i]=j
                     duplicate_question_score = {
-                        id: heapq.heapify([]) for id in self.duplicate_map.keys()
+                        id: heapq.heapify([]) for id in self.dup_score_details.keys()
                     }
 
                     # iterate through each duplicate question
-                    for dup_id in self.duplicate_map.keys():
+                    for dup_id in self.dup_score_details.keys():
 
-                        duplicate_question_score[dup_id]=cal_param_scores_for_a_question(params, self.duplicate_map[dup_id]["scores"])
+                        duplicate_question_score[dup_id]=cal_param_scores_for_a_question(params, self.dup_score_details[dup_id]["scores"])
 
                     score = self.evalution_criteria(duplicate_question_score)
                     if score > best_score:
