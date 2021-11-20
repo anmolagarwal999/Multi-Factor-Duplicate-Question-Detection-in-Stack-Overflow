@@ -20,7 +20,7 @@ class LDA:
         self.data_path = data_path
         self.storage_path = storage_path
         self.preprocessing_path = preprocessing_path
-        self.processing = Preprocess(input_path=self.data_path, remove_small_word=True, do_lemmatization=True)
+        self.processing = Preprocess(remove_small_word=True, do_lemmatization=True)
         self.K = 100
         self.dictionary = None
         self.lda_model = None
@@ -33,13 +33,17 @@ class LDA:
         for file in os.listdir(self.data_path):
             if "json" not in file:
                 continue
-            with open(f'{self.data_path}/{file}', 'r') as f:
+            with open(f"{self.data_path}/{file}", "r") as f:
                 questions = json.load(f)
                 # print(type(questions))
                 # print(questions.keys())
-                _processed_docs = [self.processing.parse_string(" ".join([question["body"], question["title"]])) for
-                                   key, question in questions.items()]
-                with open(f"{self.preprocessing_path}/{file}", 'w') as fd:
+                _processed_docs = [
+                    self.processing.parse_string(
+                        " ".join([question["body"], question["title"]])
+                    )
+                    for key, question in questions.items()
+                ]
+                with open(f"{self.preprocessing_path}/{file}", "w") as fd:
                     json.dump(_processed_docs, fd)
 
                 if self.dictionary is None:
@@ -59,11 +63,16 @@ class LDA:
         for file in os.listdir(self.preprocessing_path):
             if "json" not in file:
                 continue
-            with open(f'{self.preprocessing_path}/{file}', 'r') as f:
+            with open(f"{self.preprocessing_path}/{file}", "r") as f:
                 processed_docs = json.load(f)
                 bow_corpus = [self.dictionary.doc2bow(doc) for doc in processed_docs]
                 if self.lda_model is None:
-                    self.lda_model = LdaMulticore(bow_corpus, num_topics=self.K, id2word=self.dictionary, workers=3)
+                    self.lda_model = LdaMulticore(
+                        bow_corpus,
+                        num_topics=self.K,
+                        id2word=self.dictionary,
+                        workers=3,
+                    )
                 else:
                     self.lda_model.update(bow_corpus)
 
@@ -78,23 +87,33 @@ class LDA:
         for file in os.listdir(self.data_path):
             if "json" not in file:
                 continue
-            with open(f'{self.data_path}/{file}', 'r') as f:
+            with open(f"{self.data_path}/{file}", "r") as f:
                 questions = json.load(f)
-                with open(f'{self.preprocessing_path}/{file}', 'r') as fp:
+                with open(f"{self.preprocessing_path}/{file}", "r") as fp:
                     processed_docs = json.load(fp)
-                    [questions[question].update(
-                        {"topic": [float(score) for index, score in
-                                   self.lda_model.get_document_topics(self.dictionary.doc2bow(processed_docs[index]),
-                                                                      minimum_probability=0.0)]})
-                        for index, question
-                        in enumerate(questions)]
-                    with open(f'{self.storage_path}/{file}', 'w') as fd:
+                    [
+                        questions[question].update(
+                            {
+                                "topic": [
+                                    float(score)
+                                    for index, score in self.lda_model.get_document_topics(
+                                        self.dictionary.doc2bow(processed_docs[index]),
+                                        minimum_probability=0.0,
+                                    )
+                                ]
+                            }
+                        )
+                        for index, question in enumerate(questions)
+                    ]
+                    with open(f"{self.storage_path}/{file}", "w") as fd:
                         json.dump(questions, fd)
 
 
 if __name__ == "__main__":
     begin = datetime.datetime.now()
-    LDA = LDA(data_path=sys.argv[1], preprocessing_path=sys.argv[2], storage_path=sys.argv[3])
+    LDA = LDA(
+        data_path=sys.argv[1], preprocessing_path=sys.argv[2], storage_path=sys.argv[3]
+    )
     LDA.dict_creation()
     LDA.lda_creation()
     LDA.get_topics()
