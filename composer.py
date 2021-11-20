@@ -17,9 +17,9 @@ class Composer:
         self.duplicate_path = duplicate_path
         self.question_path = question_path
         self.processer = Preprocess()
-        self.iterations = 10
+        self.iterations =10
         self.dup_score_details = {}
-        self.N = 2 # number of dups to be considered
+        self.N = 10 # number of dups to be considered
         self.K = 10 # recall
 
     def duplicate_similarity(self):
@@ -75,7 +75,7 @@ class Composer:
                             list_of_dups[curr_dup_id], candidate_questions[can_qid]
                         )
 
-                        print("SIm scores found to be ", sim_scores)
+                        # print("SIm scores found to be ", sim_scores)
                         self.dup_score_details[curr_dup_id]["scores"].append(
                             {
                                 "candidate_qid": can_qid,
@@ -86,8 +86,8 @@ class Composer:
                             }
                         )
                         # return
-                        if len(self.dup_score_details[curr_dup_id]["scores"])==3:
-                            break
+                        # if len(self.dup_score_details[curr_dup_id]["scores"])==3:
+                        #     break
             
 
     def cal_param_scores_for_a_question(self,params, scores_dict):
@@ -166,7 +166,7 @@ class Composer:
 
                 params[i] = best_params[i]
 
-        return best_params
+        return (best_params, best_score)
 
     def evalution_criteria(self, q_heaps):
 
@@ -181,7 +181,9 @@ class Composer:
             for exp_candidate in actual_best:
                 if exp_candidate in predicted_best:
                     success_num+=1
+                    print("NICE SUCCESS")
                     break
+        print(f"score is {success_num}/{success_denom}")
         params_score=success_num/success_denom
         return params_score
         
