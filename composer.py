@@ -18,7 +18,7 @@ class Composer:
         self.processer = Preprocess()
         self.iterations = 10
         self.dup_score_details = {}
-        self.N = 2 # number of dups to be considered
+        self.N = 10 # number of dups to be considered
         self.K = 20 # recall
 
     def duplicate_similarity(self):
@@ -42,67 +42,40 @@ class Composer:
 
         for curr_dup_id in activate_dup_keys:
             print("Id of dup question being ivestigated is ", curr_dup_id)
-            print(f"This q has {len(list_of_dups[qid]["dups_list"])}")
+            print("legnth ", len(list_of_dups[curr_dup_id]['dups_list']))
+            # print(f"This q has {len(list_of_dups[curr_dup_id]["dups_list"])}")
 
+            sort_id_of_dup=list_of_dups[curr_dup_id]['sort_id']
             for file in os.listdir(self.question_path):
                 if "json" not in file:
                     continue
                 print("curr file to be used is ", file)
                 with open(f"{self.question_path}/{file}", "r") as f:
 
-                    # 0.json = 50 sorted elements
-                    # 0th duplicate = 25th 
-                    #1st dup = 38th position
-                    # candidate questions
-
-                    # load all 50
                     candidate_questions = json.load(f)
+                    print("Loaded a dict with num candidates as ", len(candidate_questions))
+                            
+                    for can_qid in candidate_questions:
 
-                    # load all candidates
+                        candidate_sorted_id=candidate_questions[can_qid]['sort_id']
+                        if candidate_sorted_id>sort_id_of_dup:
+                            continue
+                        sim_scores = self.processer.calculate_similarity(
+                            list_of_dups[curr_dup_qid], candidate_questions[can_qid]
+                        )
 
-
-                    # iterate through all candidates
-
-
-                    
-                    for can_qid, can_question in candidate_questions.items():
-
-                        ids_to_remove = []
-
-                        # run twice
-                        # iterate through all list_of_dups
-                        for dup_qid in activate_dup_keys:
-                            if qid == dup_qid:
-                                continue
-
-                            # not a valid contender
-                            if (
-                                question["creation_date"]
-                                >= list_of_dups[dup_qid]["creation_date"]
-                            ):
-                                ids_to_remove.append(dup_qid)
-                                continue
-
-
-                            sim_scores = self.processer.calculate_similarity(
-                                list_of_dups[dup_qid], question
-                            )
-                            self.dup_score_details[dup_qid]["scores"].push(
-                                {
-                                    "qid": qid,
-                                    "title_score": sim_scores["title"],
-                                    "body_score": sim_scores["body"],
-                                    "tag_score": sim_scores["tag"],
-                                    "topic_score": sim_scores["topics"],
-                                }
-                            )
-
-                            # if len(self.dup_score_details[dup_qid]["scores"]) >= self.K:
-                            #     self.dup_score_details[dup_qid]["scores"].pop()
-
-                        activate_dup_keys = [
-                            x for x in activate_dup_keys if (x not in ids_to_remove)
-                        ]
+                        print("SIm scores found to be ", sim_scores)
+                        self.dup_score_details[dup_qid]["scores"].push(
+                            {
+                                "candidate_qid": qid,
+                                "title_score": sim_scores["title"],
+                                "body_score": sim_scores["body"],
+                                "tag_score": sim_scores["tag"],
+                                "topic_score": sim_scores["topics"],
+                            }
+                        )
+                        return
+            
 
     def cal_param_scores_for_a_question(self, four_params, scores_dict):
         # dup_id=id_of_dup_q
