@@ -8,19 +8,15 @@ import random
 
 from preprocessing import Preprocess
 
-# 60 files, each file has 5000 posts = 3 lakh posts
-# sorted
-
-
 class Composer:
     def __init__(self, duplicate_path="", question_path=""):
         self.duplicate_path = duplicate_path
         self.question_path = question_path
         self.processer = Preprocess()
-        self.iterations =10
+        self.iterations = 30
         self.dup_score_details = {}
-        self.N = 10 # number of dups to be considered
-        self.K = 10 # recall
+        self.N = 300 # number of dups to be considered
+        self.K = 20 # recall
 
     def duplicate_similarity(self):
 
