@@ -4,6 +4,7 @@ import json
 import os
 import math
 import sys
+import random
 
 from preprocessing import Preprocess
 
@@ -18,8 +19,8 @@ class Composer:
         self.processer = Preprocess()
         self.iterations = 10
         self.dup_score_details = {}
-        self.N = 10 # number of dups to be considered
-        self.K = 20 # recall
+        self.N = 2 # number of dups to be considered
+        self.K = 10 # recall
 
     def duplicate_similarity(self):
 
@@ -43,12 +44,19 @@ class Composer:
         for curr_dup_id in activate_dup_keys:
             print("Id of dup question being ivestigated is ", curr_dup_id)
             print("legnth ", len(list_of_dups[curr_dup_id]['dups_list']))
+
+            if list_of_dups[curr_dup_id]['topic']==None:
+                continue
             # print(f"This q has {len(list_of_dups[curr_dup_id]["dups_list"])}")
 
             sort_id_of_dup=list_of_dups[curr_dup_id]['sort_id']
+
+            print("dup sorted id is ", sort_id_of_dup)
             for file in os.listdir(self.question_path):
                 if "json" not in file:
                     continue
+
+                
                 print("curr file to be used is ", file)
                 with open(f"{self.question_path}/{file}", "r") as f:
 
@@ -58,30 +66,35 @@ class Composer:
                     for can_qid in candidate_questions:
 
                         candidate_sorted_id=candidate_questions[can_qid]['sort_id']
-                        if candidate_sorted_id>sort_id_of_dup:
+                        if candidate_questions[can_qid]['topic']==None:
                             continue
+
+                        if candidate_sorted_id>sort_id_of_dup:
+                            break
                         sim_scores = self.processer.calculate_similarity(
-                            list_of_dups[curr_dup_qid], candidate_questions[can_qid]
+                            list_of_dups[curr_dup_id], candidate_questions[can_qid]
                         )
 
                         print("SIm scores found to be ", sim_scores)
-                        self.dup_score_details[dup_qid]["scores"].push(
+                        self.dup_score_details[curr_dup_id]["scores"].append(
                             {
-                                "candidate_qid": qid,
+                                "candidate_qid": can_qid,
                                 "title_score": sim_scores["title"],
                                 "body_score": sim_scores["body"],
-                                "tag_score": sim_scores["tag"],
+                                "tag_score": sim_scores["tags"],
                                 "topic_score": sim_scores["topics"],
                             }
                         )
-                        return
+                        # return
+                        if len(self.dup_score_details[curr_dup_id]["scores"])==3:
+                            break
             
 
-    def cal_param_scores_for_a_question(self, four_params, scores_dict):
+    def cal_param_scores_for_a_question(self,params, scores_dict):
         # dup_id=id_of_dup_q
         # for this duplicate, calculate 
 
-        init_heap=heapq.heapify([])
+        init_heap=[]
 
 
         for score_obj in scores_dict:
@@ -93,13 +106,14 @@ class Composer:
             )
             heapq.heappush(
                 init_heap,
-                (composer_score, score_obj["qid"]),
+                (composer_score, score_obj["candidate_qid"]),
             )
 
-            if len(duplicate_question_score[dup_id]) >= self.K:
-                heapq.heappop(duplicate_question_score[dup_id])
+            if len(init_heap) >= self.K:
+                heapq.heappop(init_heap)
 
-            return heap_dict
+        # return list of pairs (score, qid)
+        return init_heap
 
 
     def param_estimation(self):
@@ -122,7 +136,7 @@ class Composer:
 
             # randomly init current params between 0 and 1
             for i in range(4):
-                params[i] = math.random()
+                params[i] = random.random()
 
             # init let best_params let [a,b,c,d]
             # let it be [0.01, 0.02, 0.03, 0.04]
@@ -133,29 +147,45 @@ class Composer:
                 # best_params = [alpha,0,0,0]
                 best_params[i] = params[i]
                 params[i] = 0
-
-                for j in range(0, 1.01, 0.01):
+                j=0
+                while(j<1.01):
                     params[i]=j
-                    duplicate_question_score = {
+                    q_heaps = {
                         id: heapq.heapify([]) for id in self.dup_score_details.keys()
                     }
 
                     # iterate through each duplicate question
-                    for dup_id in self.dup_score_details.keys():
+                    for dup_q_id in self.dup_score_details.keys():
+                        q_heaps[dup_q_id]=self.cal_param_scores_for_a_question(params, self.dup_score_details[dup_q_id]["scores"])
 
-                        duplicate_question_score[dup_id]=cal_param_scores_for_a_question(params, self.dup_score_details[dup_id]["scores"])
-
-                    score = self.evalution_criteria(duplicate_question_score)
+                    score = self.evalution_criteria(q_heaps)
                     if score > best_score:
                         best_params[i] = j
                         best_score = score
+                    j+=0.05
 
                 params[i] = best_params[i]
 
         return best_params
 
-    def evalution_criteria(self):
-        pass
+    def evalution_criteria(self, q_heaps):
+
+        # I curently have a heap with qid as key and list of pairs of (score, best candid)
+        # exp found in dup_score_details[qid][expected_questions]
+        wanted_q_ids=list(q_heaps.keys())
+        success_num=0
+        success_denom=len(wanted_q_ids)
+        for curr_q_id, curr_heap in q_heaps.items():
+            predicted_best=set([x[1] for x in curr_heap])
+            actual_best=self.dup_score_details[curr_q_id]['expected_questions']
+            for exp_candidate in actual_best:
+                if exp_candidate in predicted_best:
+                    success_num+=1
+                    break
+        params_score=success_num/success_denom
+        return params_score
+        
+        
 
 
 if __name__ == "__main__":
