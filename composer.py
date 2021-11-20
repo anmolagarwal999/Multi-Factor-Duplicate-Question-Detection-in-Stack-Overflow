@@ -18,7 +18,7 @@ class Composer:
         self.processer = Preprocess()
         self.iterations = 10
         self.duplicate_map = {}
-        self.N = 300 # number of dups to be considered
+        self.N = 2 # number of dups to be considered
         self.K = 20 # recall
 
     def duplicate_similarity(self):
@@ -29,18 +29,19 @@ class Composer:
             list_of_dups = json.load(f)
 
         print(f"Dups loaded : found {len(list_of_dups)}")
-        return 
+        # return 
 
         # change this to adjust for ordered dict
-        duplicate_keys = list_of_dups.keys()[: self.N]
+        activate_dup_keys = list(list_of_dups.keys())[: self.N]
         self.duplicate_map = {
-            qid: {"actual_questions": list_of_dups[qid]["dups"], "scores": []}
-            for qid in duplicate_keys
+            qid: {"actual_questions": list_of_dups[qid]["dups_list"], "scores": []}
+            for qid in activate_dup_keys
         }
 
         for file in os.listdir(self.question_path):
             if "json" not in file:
                 continue
+            print("curr file to be used is ", file)
             with open(f"{self.question_path}/{file}", "r") as f:
 
                 # 0.json = 50 sorted elements
@@ -50,6 +51,14 @@ class Composer:
 
                 # load all 50
                 questions = json.load(f)
+
+                # load all candidates
+
+
+                # iterate through all candidates
+
+
+                
                 for qid, question in questions.items():
 
                     # 
@@ -57,7 +66,7 @@ class Composer:
 
                     # run twice
                     # iterate through all list_of_dups
-                    for dup_qid in duplicate_keys:
+                    for dup_qid in activate_dup_keys:
                         if qid == dup_qid:
                             continue
 
@@ -86,8 +95,8 @@ class Composer:
                         # if len(self.duplicate_map[dup_qid]["scores"]) >= self.K:
                         #     self.duplicate_map[dup_qid]["scores"].pop()
 
-                    duplicate_keys = [
-                        x for x in duplicate_keys if (x not in ids_to_remove)
+                    activate_dup_keys = [
+                        x for x in activate_dup_keys if (x not in ids_to_remove)
                     ]
 
     def cal_param_scores_for_a_question(self, four_params, scores_dict):
