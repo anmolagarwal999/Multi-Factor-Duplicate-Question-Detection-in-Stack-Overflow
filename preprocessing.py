@@ -16,8 +16,6 @@ class Preprocess:
     ) -> None:
         self.ps = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
-        with open(f"{self.DATADIR}/0.json", "r") as f:
-            self.questions = json.load(f)
         self.cleaned_question = {}
         self.punc_string = (
             r"!|\(|\)|-|\[|\]|\{|\}|;|:|'|\"|<|>|\/|\?|@|=|\$|%|\^|&|\*|\+|_|~|\.|\,|\\"
@@ -67,15 +65,20 @@ class Preprocess:
         similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0}
         keys = ["title", "body", "tags", "topics"]
         for key in keys:
-            if key == "title" or key == "body":
-                similarities[key] = self.merge_bog(
+            if key == "title":
+                similarities["title"] = self.merge_bog(
+                    self.parse_string(question_1[key]),
+                    self.parse_string(question_2[key]),
+                )
+            elif key == "body":
+                similarities["body"] = self.merge_bog(
                     self.parse_string(question_1[key]),
                     self.parse_string(question_2[key]),
                 )
             elif key == "tags":
-                similarities[key] = self.merge_bog(question_1[key], question_2[key])
+                similarities["tags"] = self.merge_bog(question_1[key], question_2[key])
             elif key == "topics":
-                similarities[key] = self.cosine_similarity(
+                similarities["topics"] = self.cosine_similarity(
                     question_1[key], question_2[key]
                 )
 
