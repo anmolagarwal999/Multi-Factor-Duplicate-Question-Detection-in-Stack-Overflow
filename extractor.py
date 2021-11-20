@@ -30,7 +30,7 @@ class Indexer(xml.sax.handler.ContentHandler):
                 'LastEditorDisplayName', 'LastEditorUserId', 'OwnerUserId', 'PostTypeId', 'Score',
                 'Tags', 'Title', 'ViewCount', 'PostId', 'RelatedPostId', 'LinkTypeId', 'TagName',
                 'Count', 'ExcerptPostId', 'WikiPostId', 'Reputation', 'DisplayName', 'EmailHash', 'LastAccessDate',
-                'AboutMe', 'rel', 'Views', 'UpVotes', 'DownVotes']
+                'AboutMe', 'rel', 'Views', 'UpVotes', 'DownVotes', 'UserId', 'Name', 'Date']
 
     def startElement(self, name, attrs):
         if name == 'row':
