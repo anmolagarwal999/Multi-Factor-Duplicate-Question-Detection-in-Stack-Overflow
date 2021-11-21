@@ -1,0 +1,31 @@
+version: '3.1'
+services:
+    db:
+        image: postgres
+        volumes:
+            - ./volumes/database_vol:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: core
+        networks:
+          - db_network
+    db_interface:
+        image: dpage/pgadmin4
+        ports:
+          - 8000:80
+        environment:
+          PGADMIN_DEFAULT_EMAIL: test@test.com
+          PGADMIN_DEFAULT_PASSWORD: password
+        volumes:
+          - pgadmin:/var/lib/pgadmin
+        networks:
+          - db_network
+volumes:
+        pgadmin:
+
+networks:
+    db_network:
+        # driver: default
+
