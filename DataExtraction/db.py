@@ -99,23 +99,21 @@ class Database:
                 if cols[i] == 'topic' and rec[i] is not None:
                     q[cols[i]] = [float(t) for t in rec[i]]
             q['sort_id'] = _id
-            if q['Id'] == 194 or q['Id'] == '194':
-                print(q)
             questions[q['sort_id']] = q
             _id += 1
         self.commit()
         return questions
 
-    def update_questions(self, questions, new_col):
-        query = f"""
-        UPDATE questions SET {new_col}=data.{new_col} FROM (VALUES %s) AS data(Id, {new_col}) WHERE questions.Id = data.Id;
-        """
-        value_list = []
-        for q in questions:
-            value_list.append((int(q['qid']), list(map(float, q[new_col]))))
-        cur = self.get_db()
-        execute_values(cur, query, value_list)
-        self.commit()
+    # def update_questions(self, questions, new_col):
+    #     query = f"""
+    #     UPDATE questions SET {new_col}=data.{new_col} FROM (VALUES %s) AS data(Id, {new_col}) WHERE questions.Id = data.Id;
+    #     """
+    #     value_list = []
+    #     for q in questions:
+    #         value_list.append((int(q['qid']), list(map(float, q[new_col]))))
+    #     cur = self.get_db()
+    #     execute_values(cur, query, value_list)
+    #     self.commit()
 
         # def main():
         #     db = Database()
