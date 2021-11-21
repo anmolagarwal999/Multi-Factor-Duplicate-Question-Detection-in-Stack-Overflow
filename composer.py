@@ -13,9 +13,9 @@ class Composer:
         self.duplicate_path = duplicate_path
         self.question_path = question_path
         self.processer = Preprocess()
-        self.iterations = 30
+        self.iterations = 10
         self.dup_score_details = {}
-        self.N = 300 # number of dups to be considered
+        self.N = 100 # number of dups to be considered
         self.K = 20 # recall
 
     def duplicate_similarity(self):
@@ -39,7 +39,7 @@ class Composer:
 
         for curr_dup_id in activate_dup_keys:
             print("Id of dup question being ivestigated is ", curr_dup_id)
-            print("legnth ", len(list_of_dups[curr_dup_id]['dups_list']))
+            print("total dups in ground truth is ", len(list_of_dups[curr_dup_id]['dups_list']))
 
             if list_of_dups[curr_dup_id]['topic']==None:
                 continue
@@ -102,7 +102,7 @@ class Composer:
             )
             heapq.heappush(
                 init_heap,
-                (composer_score, score_obj["candidate_qid"]),
+                (-composer_score, score_obj["candidate_qid"]),
             )
 
             if len(init_heap) >= self.K:
@@ -179,7 +179,8 @@ class Composer:
                     success_num+=1
                     print("NICE SUCCESS")
                     break
-        print(f"score is {success_num}/{success_denom}")
+        if success_num!=0:
+            print(f"score is {success_num}/{success_denom}")
         params_score=success_num/success_denom
         return params_score
         
