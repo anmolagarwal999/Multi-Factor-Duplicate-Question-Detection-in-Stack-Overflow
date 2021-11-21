@@ -16,13 +16,16 @@ cols = [col[0] for col in columns_w_type]
 
 class Database:
     def __init__(self):
+        """Create a Postgres Database interface class"""
         self.conn = psycopg2.connect(host='localhost', database='core', user='postgres', password='password')
 
     def get_db(self):
+        """Get a cursor to manupilate data"""
         cur = self.conn.cursor()
         return cur
 
     def drop_questions(self):
+        """Drop all questions"""
         db = self.get_db()
         query = """
         DROP TABLE IF EXISTS Questions;
@@ -31,12 +34,14 @@ class Database:
         self.commit()
 
     def commit(self):
+        """Commit the changes to database"""
         try:
             self.conn.commit()
         except Exception:
             self.conn.rollback()
 
     def create_questions(self):
+        """Create a table to store the questions"""
         query = """
         CREATE TABLE Questions (
             Body text,
@@ -50,7 +55,8 @@ class Database:
             body_vec text[],
             title_vec text[],
             dups_list text[],
-            tags_list text[]
+            tags_list text[],
+            topic numeric[]
         );
         """
         db = self.get_db()
@@ -58,6 +64,7 @@ class Database:
         self.commit()
 
     def add_questions(self, questions):
+        """Add questions to database"""
         query = f"""
         INSERT INTO Questions ({",".join(cols)}) VALUES %s
         """
@@ -77,10 +84,14 @@ class Database:
         self.commit()
 
     def refresh_questions(self):
+        """Delete all questions and create a new table"""
         self.drop_questions()
         self.create_questions()
 
     def get_questions(self, start_row, n_docs):
+        """
+        Get `n_docs` questions from `start_row` sorted by CreationDate
+        """
         query = f"""
         select * from questions order by CreationDate asc offset {start_row} limit {n_docs};
         """
@@ -105,6 +116,10 @@ class Database:
         return questions
 
     # def update_questions(self, questions, new_col):
+
+        # """
+        # Temporary function to merge LDA topic values to the database
+        # """
     #     query = f"""
     #     UPDATE questions SET {new_col}=data.{new_col} FROM (VALUES %s) AS data(Id, {new_col}) WHERE questions.Id = data.Id;
     #     """
