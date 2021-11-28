@@ -67,16 +67,7 @@ class LDA:
                 processed_docs = json.load(f)
                 bow_corpus = [self.dictionary.doc2bow(doc) for doc in processed_docs]
                 if self.lda_model is None:
-<<<<<<< Updated upstream
-                    self.lda_model = LdaMulticore(
-                        bow_corpus,
-                        num_topics=self.K,
-                        id2word=self.dictionary,
-                        workers=3,
-                    )
-=======
                     self.lda_model = LdaMulticore(bow_corpus, num_topics=self.K, id2word=self.dictionary, workers=2)
->>>>>>> Stashed changes
                 else:
                     self.lda_model.update(bow_corpus)
 
@@ -84,6 +75,9 @@ class LDA:
 
     def get_topics(self):
         """Final Topics for each post"""
+
+        if self.dictionary is None:
+            self.dictionary = Dictionary.load_from_text(self.dict_filename)
 
         if self.lda_model is None:
             self.lda_model = LdaMulticore.load(self.lda_file)
@@ -100,10 +94,10 @@ class LDA:
                             {
                                 "topic": [
                                     float(score)
-                                    for index, score in self.lda_model.get_document_topics(
+                                    for i, score in sorted(self.lda_model.get_document_topics(
                                         self.dictionary.doc2bow(processed_docs[index]),
                                         minimum_probability=0.0,
-                                    )
+                                    ), key=lambda x: x[0])
                                 ]
                             }
                         )
@@ -119,6 +113,6 @@ if __name__ == "__main__":
         data_path=sys.argv[1], preprocessing_path=sys.argv[2], storage_path=sys.argv[3]
     )
     LDA.dict_creation()
-    LDA.lda_creation()
-    LDA.get_topics()
+    # LDA.lda_creation()
+    # LDA.get_topics()
     print(datetime.datetime.now() - begin)
