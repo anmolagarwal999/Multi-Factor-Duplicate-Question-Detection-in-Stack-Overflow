@@ -67,12 +67,16 @@ class LDA:
                 processed_docs = json.load(f)
                 bow_corpus = [self.dictionary.doc2bow(doc) for doc in processed_docs]
                 if self.lda_model is None:
+<<<<<<< Updated upstream
                     self.lda_model = LdaMulticore(
                         bow_corpus,
                         num_topics=self.K,
                         id2word=self.dictionary,
                         workers=3,
                     )
+=======
+                    self.lda_model = LdaMulticore(bow_corpus, num_topics=self.K, id2word=self.dictionary, workers=2)
+>>>>>>> Stashed changes
                 else:
                     self.lda_model.update(bow_corpus)
 

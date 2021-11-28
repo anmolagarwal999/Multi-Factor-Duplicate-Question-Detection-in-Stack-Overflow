@@ -41,8 +41,6 @@ class Indexer(xml.sax.handler.ContentHandler):
                 except KeyError:
                     pass
 
-                
-
     def endElement(self, name):
         if name == 'row':
             self.index_content()
