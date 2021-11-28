@@ -16,8 +16,8 @@ class Preprocess:
     ) -> None:
         self.ps = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
-        with open(f"{self.DATADIR}/0.json", "r") as f:
-            self.questions = json.load(f)
+        # with open(f"{self.DATADIR}/0.json", "r") as f:
+        #     self.questions = json.load(f)
         self.cleaned_question = {}
         self.punc_string = (
             r"!|\(|\)|-|\[|\]|\{|\}|;|:|'|\"|<|>|\/|\?|@|=|\$|%|\^|&|\*|\+|_|~|\.|\,|\\"
