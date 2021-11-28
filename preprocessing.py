@@ -55,7 +55,8 @@ class Preprocess:
         tokenized_text = text.split()
         if self.do_lemmatization:
             tokenized_text = self.lemmatizing(tokenized_text, pos="v")
-        tokenized_text = self.stemming(tokenized_text)
+        else:
+            tokenized_text = self.stemming(tokenized_text)
         tokenized_text = self.remove_stopwords(tokenized_text)
         return tokenized_text
 
@@ -99,9 +100,7 @@ class Preprocess:
         counts_n = Counter()
         counts_m.update(word for word in bog_m)
         counts_n.update(word for word in bog_n)
-        # sum_m = sum(counts_m.values)
         sum_m = len(bog_m)
-        # sum_n = sum(counts_n.values)
         sum_n = len(bog_n)
         vec_m = []
         vec_n = []
@@ -117,18 +116,3 @@ class Preprocess:
 
         cosine = self.cosine_similarity(vec_n, vec_m)
         return cosine
-
-    # def parse(self):
-    #     self.cleaned_questions = {
-    #         key: {
-    #             k: self.parse_string(v) if k in ["body", "title"] else v
-    #             for k, v in _value.items()
-    #         }
-    #         for key, _value in self.questions.items()
-    #     }
-
-
-if __name__ == "__main__":
-    processing = Preprocess()
-    # print(processing.parse_string("I'm new to C# and I want to use a track-bar to change a form's opacity. This is my code: decimal trans = trackBar Value / 5000; this.Opacity = trans; When I try to build it, I get this error: ' Cannot implicitly convert type 'decimal' to 'double' I tried making trans a double, but then the control doesn't work. This code worked fine for me in VB.NET. What do I need to do differently? you?"))
-    # processing.parse()
