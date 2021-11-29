@@ -1,8 +1,8 @@
-data/
 data_files/
 .ipynb_checkpoints/
 __pycache__/
 .DS_Store
 .idea/
 home/
-*.zip
+local_data/
+data_old/
