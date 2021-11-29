@@ -2,4 +2,4 @@ __pycache__
 temp/
 .ipynb_checkpoints/
 sorted_with_topic/
-database_vol/
+volumes/
