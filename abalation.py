@@ -2,96 +2,30 @@ import datetime
 import heapq
 import json
 import os
-import sys
 from random import random
+import sys
 from tqdm import tqdm
 
-from preprocessing import Preprocess
 
-
-class Composer:
-    def __init__(self, duplicate_path="", question_path=""):
-        self.duplicate_path = duplicate_path
-        self.question_path = question_path
-        self.processor = Preprocess()
+class Ablation:
+    def __init__(self, score_path="", param_ablate="2"):
+        self.score_path = score_path
+        self.param_ablate = int(param_ablate)
+        self.num_params = 4
+        assert (self.param_ablate >= 0 and self.param_ablate < self.num_params)
         self.iterations = 10
         self.dup_score_details = {}
-        self.N = 400  # number of dups to be considered
         self.K = 20  # recall
 
     def duplicate_similarity(self):
 
-        # Load all paths
-        print("Opening and loading all duplicates")
-        with open(self.duplicate_path, "r") as f:
-            list_of_dups = json.load(f)
-
-        print(f"Dups loaded : found {len(list_of_dups)}")
-
-        # Change this to adjust for ordered dict
-        activate_dup_keys = list(list_of_dups.keys())[self.N - 100: self.N]
-
-        # Store a dictionary with 3 things
-        # NOTE: Making every qid to int from string
-        self.dup_score_details = {
-            qid: {"expected_questions": list(map(int, list_of_dups[qid]["parent_q_list"])), "scores": []}
-            for qid in activate_dup_keys
-        }
-
+        # Load all duplicate question scores
+        print("Opening and loading all duplicate score")
+        with open(self.score_path, "r") as f:
+            self.dup_score_details = json.load(f)
         
-            # for file in os.listdir(self.question_path):
-            #     if "json" not in file:
-            #         continue
-
-            # print("curr file to be used is ", file)
-        for i in range(50):
-            print(f"File Number {i}")
-            with open(f"{self.question_path}/{i}.json", "r") as f:
-
-                candidate_questions = json.load(f)
-                # print("Loaded a question dict with num candidates:", len(candidate_questions))
-
-                for curr_dup_id in activate_dup_keys:
-                    # print("Id of dup question being investigated is ", curr_dup_id)
-                    # print("Total dups in ground truth is ", len(list_of_dups[curr_dup_id]['parent_q_list']))
-
-                    if list_of_dups[curr_dup_id]['topic'] is None:
-                        continue
-
-                    # sort_id_of_dup = list_of_dups[curr_dup_id]['sort_id']
-
-                    # print("dup sorted id is ", sort_id_of_dup)
-
-                    for _, cand in candidate_questions.items():
-
-                        candidate_sorted_id = cand['sort_id']
-
-                        if cand['topic'] is None or cand['Id'] == list_of_dups[curr_dup_id]['Id']:
-                            continue
-
-                        # if candidate_sorted_id > sort_id_of_dup:
-                        #     break
-                        if list_of_dups[curr_dup_id]['CreationDate'] < cand['CreationDate']:
-                            break
-
-                        sim_scores = self.processor.calculate_similarity(
-                            list_of_dups[curr_dup_id], cand
-                        )
-
-                        # print("SIm scores found to be ", sim_scores)
-                        self.dup_score_details[curr_dup_id]["scores"].append(
-                            {
-                                "candidate_qid": cand["Id"],
-                                "title_score": sim_scores["title"],
-                                "body_score": sim_scores["body"],
-                                "tag_score": sim_scores["tags"],
-                                "topic_score": sim_scores["topics"],
-                            }
-                        )
+        print("All scores loaded")
         
-        with open('dup_score_details_100_test.json', 'w') as f:
-            json.dump(self.dup_score_details, f)
-
     def cal_param_scores_for_a_question(self, params, scores_dict):
         # dup_id=id_of_dup_q
         # for this duplicate, calculate 
@@ -124,7 +58,7 @@ class Composer:
         # return a array with 4 tuple values
 
         # best params and score from all restarts
-        best_params = [0 for _ in range(4)]
+        best_params = [0 for _ in range(self.num_params)]
         best_score = 0
 
         # heaps for each duplicate question which contain top K questions as predicted by algorithm
@@ -135,7 +69,8 @@ class Composer:
         for _ in tqdm(range(self.iterations)):
 
             # random restart type approach, for each iteration choose a new set of starting params
-            init_params = [random() for _ in range(4)]
+            init_params = [random() for _ in range(self.num_params)]
+            init_params[self.param_ablate] = 0
 
             for dup_q_id in self.dup_score_details.keys():
                 q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(init_params,
@@ -148,7 +83,9 @@ class Composer:
             params = init_params.copy()
 
             # update and try values for each parameter iteratively
-            for i in range(4):
+            for i in range(self.num_params):
+                if i == self.param_ablate:
+                    continue
                 j = 0
                 while j < 1.01:
                     # try each value from 0 to 1
@@ -201,12 +138,9 @@ class Composer:
 if __name__ == "__main__":
     begin = datetime.datetime.now()
 
-    # sorted = 3000 posts
-    # duplicate path = 300 elements
-    # question_path = folder path where 60 files are stored
-    composer = Composer(duplicate_path=sys.argv[1], question_path=sys.argv[2])
-    composer.duplicate_similarity()
-    # best_params, best_score = composer.param_estimation()
-    # print(f'final best score: {best_score} with {best_params} params')
+    ablation = Ablation(score_path=sys.argv[1], param_ablate=sys.argv[2])
+    ablation.duplicate_similarity()
+    best_params, best_score = ablation.param_estimation()
+    print(f'Final Best Score: {best_score} with {best_params} params ablating param {sys.argv[2]}')
 
     print(datetime.datetime.now() - begin)
