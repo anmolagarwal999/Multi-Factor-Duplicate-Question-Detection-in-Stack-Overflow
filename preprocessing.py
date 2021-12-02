@@ -63,31 +63,33 @@ class Preprocess:
     def calculate_similarity(self, question_1: dict, question_2: dict) -> dict:
         """Provide 2 questions and it will return the 4 cosine similarities b/w each components"""
 
-        similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0}
+        similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0, "jaccard_sim": 0}
         keys = ["title_vec", "body_vec", "tags_list", "topic"]
-        question_1['title_vec'] = self.parse_string(question_1['cleaned_title'])
-        question_1['body_vec'] = self.parse_string(question_1['cleaned_body'])
-        question_2['title_vec'] = self.parse_string(question_2['cleaned_title'])
-        question_2['body_vec'] = self.parse_string(question_2['cleaned_body'])
-        # print("dict received is ", question_1)
+        question_1["title_vec"] = self.parse_string(question_1["cleaned_title"])
+        question_1["body_vec"] = self.parse_string(question_1["cleaned_body"])
+        question_2["title_vec"] = self.parse_string(question_2["cleaned_title"])
+        question_2["body_vec"] = self.parse_string(question_2["cleaned_body"])
         for key in keys:
             if key == "title_vec":
-                similarities["title"] = self.merge_bog(
-                    question_1[key], question_2[key]
-                )
+                similarities["title"] = self.merge_bog(question_1[key], question_2[key])
             elif key == "body_vec":
-                similarities["body"] = self.merge_bog(
-                    question_1[key], question_2[key]
-                )
+                similarities["body"] = self.merge_bog(question_1[key], question_2[key])
             elif key == "tags_list":
                 similarities["tags"] = self.merge_bog(question_1[key], question_2[key])
             elif key == "topic":
-                # print("COol stuff")
-                # print(question_1[key])
-                # print(question_1[key])
                 similarities["topics"] = self.cosine_similarity(
                     question_1[key], question_2[key]
                 )
+
+        question_1_set = set(question_1["title_vec"]).update(
+            question_1["body_vec"], question_1["tags_list"]
+        )
+        question_2_set = set(question_2["title_vec"]).update(
+            question_2["body_vec"], question_2["tags_list"]
+        )
+        similarities["jaccard_sim"] = len(
+            question_1_set.intersection(question_2_set)
+        ) / len(question_1_set.union(question_2_set))
 
         return similarities
 
@@ -109,22 +111,21 @@ class Preprocess:
         """bag of words creation of 2 list of strings"""
 
         bog_u = list(set(bog_m) | set(bog_n))
-        counts_m = Counter()
-        counts_n = Counter()
-        counts_m.update(word for word in bog_m)
-        counts_n.update(word for word in bog_n)
+        counts_m = Counter(bog_m)
+        counts_n = Counter(bog_n)
         sum_m = len(bog_m)
         sum_n = len(bog_n)
         vec_m = []
         vec_n = []
         for word in bog_u:
-            try:
+            if word in counts_m:
                 vec_m.append(counts_m[word] / sum_m)
-            except:
+            else:
                 vec_m.append(0)
-            try:
+
+            if word in counts_n:
                 vec_n.append(counts_n[word] / sum_n)
-            except:
+            else:
                 vec_n.append(0)
 
         cosine = self.cosine_similarity(vec_n, vec_m)
