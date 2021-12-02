@@ -3,7 +3,7 @@ import json
 import re
 
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from scipy import spatial
+import numpy as np
 
 from stopwords import STOPWORDS
 
@@ -65,6 +65,10 @@ class Preprocess:
 
         similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0}
         keys = ["title_vec", "body_vec", "tags_list", "topic"]
+        question_1['title_vec'] = self.parse_string(question_1['cleaned_title'])
+        question_1['body_vec'] = self.parse_string(question_1['cleaned_body'])
+        question_2['title_vec'] = self.parse_string(question_2['cleaned_title'])
+        question_2['body_vec'] = self.parse_string(question_2['cleaned_body'])
         # print("dict received is ", question_1)
         for key in keys:
             if key == "title_vec":
@@ -89,8 +93,17 @@ class Preprocess:
 
     def cosine_similarity(self, vec_n, vec_m):
         """Find cosine similarity b/w the 2 vectors"""
-
-        return 1 - spatial.distance.cosine(vec_n, vec_m)
+        if len(vec_m) == 0 or len(vec_n) == 0:
+            return 0
+        vec_n = np.array(vec_n)
+        vec_m = np.array(vec_m)
+        dot = np.dot(vec_m, vec_n)
+        norm_n = np.linalg.norm(vec_n)
+        norm_m = np.linalg.norm(vec_m)
+        if norm_m != 0 and norm_n != 0:
+            return dot / (norm_m * norm_n)
+        else:
+            return 0
 
     def merge_bog(self, bog_m, bog_n):
         """bag of words creation of 2 list of strings"""

@@ -39,7 +39,7 @@ class LDA:
                 # print(questions.keys())
                 _processed_docs = [
                     self.processing.parse_string(
-                        " ".join([question["body"], question["title"]])
+                        " ".join([question["cleaned_body"], question["cleaned_title"]])
                     )
                     for key, question in questions.items()
                 ]
@@ -113,6 +113,6 @@ if __name__ == "__main__":
         data_path=sys.argv[1], preprocessing_path=sys.argv[2], storage_path=sys.argv[3]
     )
     LDA.dict_creation()
-    # LDA.lda_creation()
-    # LDA.get_topics()
+    LDA.lda_creation()
+    LDA.get_topics()
     print(datetime.datetime.now() - begin)
