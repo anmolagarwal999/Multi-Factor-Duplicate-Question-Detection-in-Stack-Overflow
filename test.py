@@ -54,7 +54,7 @@ class Tester:
         # return a array with 4 tuple values
 
         # best params and score from all restarts
-        best_params = [0, 0.8500000000000002, 0.35, 0.6434766392149411]
+        best_params = [0.2, 0.19582983161315137, 0, 0.07184088591052762]
         test_score = 0
 
         # heaps for each duplicate question which contain top K questions as predicted by algorithm
@@ -72,7 +72,7 @@ class Tester:
         # score for initial set of params
         test_score = self.evaluation_criteria(q_heaps)
 
-        with open('abalate_0_error.json', 'w') as f:
+        with open('ablate_2_error.json', 'w') as f:
             json.dump(self.errors, f)
 
         # return best params from all restarts

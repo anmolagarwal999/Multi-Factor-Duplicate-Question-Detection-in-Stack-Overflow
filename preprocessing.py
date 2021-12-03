@@ -82,18 +82,19 @@ class Preprocess:
                     question_1[key], question_2[key]
                 )
 
-        question_1_set = set(question_1["title_vec"]).update(
-            question_1["body_vec"], question_1["tags_list"]
-        )
-        question_2_set = set(question_2["title_vec"]).update(
-            question_2["body_vec"], question_2["tags_list"]
-        )
-        similarities["jaccard_sim"] = len(
-            question_1_set.intersection(question_2_set)
-        ) / len(question_1_set.union(question_2_set))
+    def jaccard_similarity(self, question_1, question_2):
+        question_1_set = set(question_1['title_vec'])
+        question_1_set.update(question_1["body_vec"])
+        question_1_set.update(question_1["tags_list"])
 
-        return similarities
+        question_2_set = set(question_2['title_vec'])
+        question_2_set.update(question_2["body_vec"])
+        question_2_set.update(question_2["tags_list"])
 
+        return len(question_1_set.intersection(question_2_set)) / len(question_1_set.union(question_2_set))
+
+
+    
     def cosine_similarity(self, vec_n, vec_m):
         """Find cosine similarity b/w the 2 vectors"""
         if len(vec_m) == 0 or len(vec_n) == 0:
