@@ -3,7 +3,7 @@ import json
 import re
 
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from scipy import spatial
+import numpy as np
 
 from stopwords import STOPWORDS
 
@@ -16,8 +16,6 @@ class Preprocess:
     ) -> None:
         self.ps = PorterStemmer()
         self.lemmatizer = WordNetLemmatizer()
-        # with open(f"{self.DATADIR}/0.json", "r") as f:
-        #     self.questions = json.load(f)
         self.cleaned_question = {}
         self.punc_string = (
             r"!|\(|\)|-|\[|\]|\{|\}|;|:|'|\"|<|>|\/|\?|@|=|\$|%|\^|&|\*|\+|_|~|\.|\,|\\"
@@ -50,80 +48,87 @@ class Preprocess:
 
     def parse_string(self, text: str) -> list:
         """text cleaning and preprocessing"""
-
+        # print(text)
         text = text.lower()
         text = self.punc_regex.sub(" ", text)
         text = self.space_regex.sub(" ", text).strip()
         tokenized_text = text.split()
         if self.do_lemmatization:
             tokenized_text = self.lemmatizing(tokenized_text, pos="v")
-        tokenized_text = self.stemming(tokenized_text)
+        else:
+            tokenized_text = self.stemming(tokenized_text)
         tokenized_text = self.remove_stopwords(tokenized_text)
         return tokenized_text
 
     def calculate_similarity(self, question_1: dict, question_2: dict) -> dict:
         """Provide 2 questions and it will return the 4 cosine similarities b/w each components"""
 
-        similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0}
-        keys = ["title", "body", "tags", "topics"]
+        similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0, "jaccard_sim": 0}
+        keys = ["title_vec", "body_vec", "tags_list", "topic"]
+        # question_1['title_vec'] = self.parse_string(question_1['cleaned_title'])
+        # question_1['body_vec'] = self.parse_string(question_1['cleaned_body'])
+        # question_2['title_vec'] = self.parse_string(question_2['cleaned_title'])
+        # question_2['body_vec'] = self.parse_string(question_2['cleaned_body'])
+        # print("dict received is ", question_1)
         for key in keys:
-            if key == "title" or key == "body":
-                similarities[key] = self.merge_bog(
-                    self.parse_string(question_1[key]),
-                    self.parse_string(question_2[key]),
-                )
-            elif key == "tags":
-                similarities[key] = self.merge_bog(question_1[key], question_2[key])
-            elif key == "topics":
-                similarities[key] = self.cosine_similarity(
+            if key == "title_vec":
+                similarities["title"] = self.merge_bog(question_1[key], question_2[key])
+            elif key == "body_vec":
+                similarities["body"] = self.merge_bog(question_1[key], question_2[key])
+            elif key == "tags_list":
+                similarities["tags"] = self.merge_bog(question_1[key], question_2[key])
+            elif key == "topic":
+                similarities["topics"] = self.cosine_similarity(
                     question_1[key], question_2[key]
                 )
 
-        return similarities
+    def jaccard_similarity(self, question_1, question_2):
+        question_1_set = set(question_1['title_vec'])
+        question_1_set.update(question_1["body_vec"])
+        question_1_set.update(question_1["tags_list"])
 
+        question_2_set = set(question_2['title_vec'])
+        question_2_set.update(question_2["body_vec"])
+        question_2_set.update(question_2["tags_list"])
+
+        return len(question_1_set.intersection(question_2_set)) / len(question_1_set.union(question_2_set))
+
+
+    
     def cosine_similarity(self, vec_n, vec_m):
         """Find cosine similarity b/w the 2 vectors"""
-
-        return 1 - spatial.distance.cosine(vec_n, vec_m)
+        if len(vec_m) == 0 or len(vec_n) == 0:
+            return 0
+        vec_n = np.array(vec_n)
+        vec_m = np.array(vec_m)
+        dot = np.dot(vec_m, vec_n)
+        norm_n = np.linalg.norm(vec_n)
+        norm_m = np.linalg.norm(vec_m)
+        if norm_m != 0 and norm_n != 0:
+            return dot / (norm_m * norm_n)
+        else:
+            return 0
 
     def merge_bog(self, bog_m, bog_n):
         """bag of words creation of 2 list of strings"""
 
         bog_u = list(set(bog_m) | set(bog_n))
-        counts_m = Counter()
-        counts_n = Counter()
-        counts_m.update(word for word in bog_m)
-        counts_n.update(word for word in bog_n)
-        # sum_m = sum(counts_m.values)
+        counts_m = Counter(bog_m)
+        counts_n = Counter(bog_n)
         sum_m = len(bog_m)
-        # sum_n = sum(counts_n.values)
         sum_n = len(bog_n)
         vec_m = []
         vec_n = []
         for word in bog_u:
-            try:
+            if word in counts_m:
                 vec_m.append(counts_m[word] / sum_m)
-            except:
+            else:
                 vec_m.append(0)
-            try:
+
+            if word in counts_n:
                 vec_n.append(counts_n[word] / sum_n)
-            except:
+            else:
                 vec_n.append(0)
 
         cosine = self.cosine_similarity(vec_n, vec_m)
         return cosine
-
-    # def parse(self):
-    #     self.cleaned_questions = {
-    #         key: {
-    #             k: self.parse_string(v) if k in ["body", "title"] else v
-    #             for k, v in _value.items()
-    #         }
-    #         for key, _value in self.questions.items()
-    #     }
-
-
-if __name__ == "__main__":
-    processing = Preprocess()
-    # print(processing.parse_string("I'm new to C# and I want to use a track-bar to change a form's opacity. This is my code: decimal trans = trackBar Value / 5000; this.Opacity = trans; When I try to build it, I get this error: ' Cannot implicitly convert type 'decimal' to 'double' I tried making trans a double, but then the control doesn't work. This code worked fine for me in VB.NET. What do I need to do differently? you?"))
-    # processing.parse()
