@@ -118,7 +118,9 @@ class Composer:
 
     def param_estimation(self):
         """estimates all the parameters of the weighted sum of the components"""
-
+        if len(self.dup_score_details) == 0:
+            with open('dup_score_details_300.json', 'r') as f:
+                self.dup_score_details = json.load(f)
         # expected output = alpha, beta, gamma, delta
         # return a array with 4 tuple values
 
@@ -175,6 +177,7 @@ class Composer:
             if init_score > best_score:
                 best_params = init_params.copy()
                 best_score = init_score
+                print(f"Better score: {best_score}")
 
         # return best params from all restarts
         return best_params, best_score
@@ -204,8 +207,8 @@ if __name__ == "__main__":
     # duplicate path = 300 elements
     # question_path = folder path where 60 files are stored
     composer = Composer(duplicate_path=sys.argv[1], question_path=sys.argv[2])
-    composer.duplicate_similarity()
-    # best_params, best_score = composer.param_estimation()
-    # print(f'final best score: {best_score} with {best_params} params')
+    # composer.duplicate_similarity()
+    best_params, best_score = composer.param_estimation()
+    print(f'final best score: {best_score} with {best_params} params')
 
     print(datetime.datetime.now() - begin)
