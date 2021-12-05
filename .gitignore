@@ -6,4 +6,5 @@ __pycache__/
 home/
 local_data/
 data_old/
+data/
 .vscode
