@@ -1,8 +1,10 @@
 import datetime
 import heapq
 import json
+from random import random
 import sys
 from tqdm import tqdm
+import pandas as pd
 
 
 
@@ -12,6 +14,7 @@ class Tester:
         self.dup_score_details = {}
         self.K = 20  # recall
         self.errors = {}
+        self.random_results = []
 
     def duplicate_loader(self):
 
@@ -47,6 +50,40 @@ class Tester:
         # return list of pairs (score, qid)
         return init_heap
 
+    def random_scorer(self):
+        q_heaps = {
+            _id: heapq.heapify([]) for _id in self.dup_score_details.keys()
+        }
+
+        best_params = [0.9, 0.85, 0.3152632209444808, 0.3]
+        self.random_results.append({"alpha": best_params[0], "beta": best_params[1], "gamma": best_params[2], "delta": best_params[3], "recall-rate@10": 0.56, "recall-rate@20": 0.64})
+        
+        for _ in tqdm(range(50)):
+            params = [random() for _ in range(4)]
+
+            # random restart type approach, for each iteration choose a new set of starting params
+            for dup_q_id in tqdm(self.dup_score_details.keys()):
+                q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(params,
+                                                                            self.dup_score_details[dup_q_id][
+                                                                                "scores"])
+            # score for initial set of params
+            test_score_20 = self.evaluation_criteria(q_heaps)
+            
+            self.K = 10 # changing k to 10
+            for dup_q_id in tqdm(self.dup_score_details.keys()):
+                q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(params,
+                                                                            self.dup_score_details[dup_q_id][
+                                                                                "scores"])
+            # score for initial set of params
+            test_score_10 = self.evaluation_criteria(q_heaps)
+            self.K = 20 #reseting
+            
+            self.random_results.append({"alpha": params[0], "beta": params[1], "gamma": params[2], "delta": params[3], "recall-rate@10": test_score_10, "recall-rate@20": test_score_20})
+        
+        df = pd.DataFrame(self.random_results)
+        df.sort_values(by=['recall-rate@20', 'recall-rate@10'], inplace=True, ascending=False)
+        df.to_csv('random_results.csv')
+
     def scorer(self):
         """estimates all the parameters of the weighted sum of the components"""
 
@@ -54,14 +91,13 @@ class Tester:
         # return a array with 4 tuple values
 
         # best params and score from all restarts
-        best_params = [0.2, 0.19582983161315137, 0, 0.07184088591052762]
+        best_params = [0.9, 0.85, 0.3152632209444808, 0.3]
         test_score = 0
 
         # heaps for each duplicate question which contain top K questions as predicted by algorithm
         q_heaps = {
             _id: heapq.heapify([]) for _id in self.dup_score_details.keys()
         }
-
 
         # random restart type approach, for each iteration choose a new set of starting params
 
@@ -72,8 +108,8 @@ class Tester:
         # score for initial set of params
         test_score = self.evaluation_criteria(q_heaps)
 
-        with open('ablate_2_error.json', 'w') as f:
-            json.dump(self.errors, f)
+        # with open('ablate_2_error.json', 'w') as f:
+        #     json.dump(self.errors, f)
 
         # return best params from all restarts
         return best_params, test_score
@@ -107,6 +143,7 @@ if __name__ == "__main__":
     composer = Tester(score_path=sys.argv[1])
     composer.duplicate_loader()
     best_params, test_score = composer.scorer()
+    # composer.random_scorer()
     print(f'final best score: {test_score} with {best_params} params')
 
     print(datetime.datetime.now() - begin)
