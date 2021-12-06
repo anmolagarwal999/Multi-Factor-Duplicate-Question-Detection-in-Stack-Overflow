@@ -44,7 +44,7 @@ class Tester:
                 (composer_score, score_obj["candidate_qid"]),
             )
 
-            if len(init_heap) >= self.K:
+            if len(init_heap) > self.K:
                 heapq.heappop(init_heap)
 
         # return list of pairs (score, qid)
