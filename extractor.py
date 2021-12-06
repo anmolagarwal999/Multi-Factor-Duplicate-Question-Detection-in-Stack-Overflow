@@ -1,15 +1,12 @@
 #!/usr/bin/python
+"""
+:brief: Extract all tag attributes from xml and convert to JSON
+
+"""
 import datetime
 
-import config
 
-## <row Id="777711" PostTypeId="1" AcceptedAnswerId="777721" CreationDate="2009-04-22T15:07:54.137" Score="0" 
-# ViewCount="175" 
-# Body="&lt;blockquote&gt;&#xA;  &lt;p&gt;Duplicate:&#xA;  &lt;a href=&quot;http://stackoverflow.com/questions/163434/are-nulls-in-a-relational-database-okay&quot;&gt;http://stackoverflow.com/questions/163434/are-nulls-in-a-relational-database-okay&lt;/a&gt;&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&#xA;&lt;p&gt;
-# I dodged a heated debate concerning nulls in the database today.&#xA;My opinion is that null is an excellent indicator of unspecified values. Every one else in the team, that has an opinion, thinks zero and empty strings are the way to go.&lt;/p&gt;&#xA;&#xA;&lt;p&gt;Are they lazy or am I to strict?&lt;/p&gt;&#xA;" 
-# OwnerUserId="21761" LastEditorUserId="44389" LastEditorDisplayName="" LastEditDate="2009-04-22T15:10:22.710" LastActivityDate="2009-04-22T15:11:00.667" 
-# ClosedDate="2009-04-22T15:11:06.530" Title="Is null harmful? [Duplicate]" Tags="&lt;asp.net&gt;&lt;sql&gt;&lt;database&gt;&lt;null&gt;" AnswerCount="4" CommentCount="1" />
-
+FILE_SIZE = 100000000
 import xml.sax.handler
 import json
 import sys
@@ -75,7 +72,7 @@ class Indexer(xml.sax.handler.ContentHandler):
             except:
                 pass
 
-        if self.index_size >= config.FILE_SIZE:
+        if self.index_size >= FILE_SIZE:
             self.dump_file()
             self.init_file()
 

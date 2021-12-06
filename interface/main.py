@@ -1,12 +1,12 @@
+"""
+:brief: File to run streamlit and visualize the data
+"""
+
 import heapq
-import json
 import streamlit as st
 from db import Database
 from params import params_dict
 import pandas as pd
-
-
-# st.set_option('wideMode' , True)
 
 
 @st.cache(allow_output_mutation=True,
@@ -191,18 +191,6 @@ else:
     beta = st.sidebar.number_input('Beta', value=params[1])
     gamma = st.sidebar.number_input('Gamma', value=params[2])
     delta = st.sidebar.number_input('Delta', value=params[3])
-    # else:
-    #     alpha = st.sidebar.number_input('Alpha', value=params[0],
-    #                                     min_value=params[0],
-    #                                     max_value=params[0])
-    #     beta = st.sidebar.number_input('Beta', value=params[1],
-    #                                    min_value=params[1], max_value=params[1])
-    #     gamma = st.sidebar.number_input('Gamma', value=params[2],
-    #                                     min_value=params[2],
-    #                                     max_value=params[2])
-    #     delta = st.sidebar.number_input('Delta', value=params[2],
-    #                                     min_value=params[2],
-    #                                     max_value=params[2])
     params_current = [alpha, beta, gamma, delta]
     if use_jaccard:
         jac_coeff = st.sidebar.number_input('Jaccard', value=params[4])
@@ -212,11 +200,6 @@ st.sidebar.write("#### Post")
 st.sidebar.write(question)
 
 ## Main screen
-
-# with st.spinner("Loading Pre-trained score file"):
-#     score_data = load_score_file()
-
-# st.write(score_data)
 
 
 st.write("""#### Formula used for computing similarity""")

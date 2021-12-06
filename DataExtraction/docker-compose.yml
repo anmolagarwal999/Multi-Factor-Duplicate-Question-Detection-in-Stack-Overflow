@@ -1,3 +1,4 @@
+# Postgres database
 version: '3.1'
 services:
     db:

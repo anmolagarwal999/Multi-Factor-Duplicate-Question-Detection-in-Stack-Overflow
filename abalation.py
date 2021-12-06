@@ -1,3 +1,6 @@
+"""
+:brief: To ablate one parameter out of 4 using composer and re-train the model.
+"""
 import datetime
 import heapq
 import json
@@ -27,8 +30,6 @@ class Ablation:
         print("All scores loaded")
         
     def cal_param_scores_for_a_question(self, params, scores_dict):
-        # dup_id=id_of_dup_q
-        # for this duplicate, calculate 
 
         init_heap = []
 

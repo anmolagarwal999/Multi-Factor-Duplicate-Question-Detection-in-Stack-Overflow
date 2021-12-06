@@ -1,10 +1,12 @@
-# TODO: Get the top 30 for the test 100 duplicate questions (DONE)
-# TODO: Append any left off expected questions (DONE)
-# TODO: Populate the ids with data (DONE)
-# TODO: Run bert embeddings for this (DONE)
-# TODO: Calculate the score (DONE)
-# TODO: Find a good linear combination for the two scores
-# TODO: Rerank the questions and find if there is an improvement
+"""
+ Get the top 30 for the test 100 duplicate questions
+ Append any left off expected questions
+ Populate the ids with data
+ Run bert embeddings for this
+ Calculate the score
+ Find a good linear combination for the two scores
+ Rerank the questions and find if there is an improvement
+"""
 
 import datetime
 import heapq

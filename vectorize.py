@@ -1,3 +1,6 @@
+"""
+:brief: Tokenization of title and body string for each post.
+"""
 import datetime
 import json
 import sys

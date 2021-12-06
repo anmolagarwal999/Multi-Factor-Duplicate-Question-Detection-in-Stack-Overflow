@@ -1,3 +1,6 @@
+"""
+:brief: Util function to do all the pre-processing / compute similarity tasks
+"""
 from collections import Counter
 import json
 import re
@@ -48,7 +51,6 @@ class Preprocess:
 
     def parse_string(self, text: str) -> list:
         """text cleaning and preprocessing"""
-        # print(text)
         text = text.lower()
         text = self.punc_regex.sub(" ", text)
         text = self.space_regex.sub(" ", text).strip()
@@ -65,11 +67,6 @@ class Preprocess:
 
         similarities = {"title": 0, "body": 0, "tags": 0, "topics": 0, "jaccard_sim": 0}
         keys = ["title_vec", "body_vec", "tags_list", "topic"]
-        # question_1['title_vec'] = self.parse_string(question_1['cleaned_title'])
-        # question_1['body_vec'] = self.parse_string(question_1['cleaned_body'])
-        # question_2['title_vec'] = self.parse_string(question_2['cleaned_title'])
-        # question_2['body_vec'] = self.parse_string(question_2['cleaned_body'])
-        # print("dict received is ", question_1)
         for key in keys:
             if key == "title_vec":
                 similarities["title"] = self.merge_bog(question_1[key], question_2[key])

@@ -1,4 +1,9 @@
 #!/usr/bin/python
+"""
+:brief: Create a dictionary using the whole dataset as a corpus
+        Training LDA model on the dictionary created
+        Adding topic similarity to each question
+"""
 import datetime
 import json
 import os
@@ -35,8 +40,6 @@ class LDA:
                 continue
             with open(f"{self.data_path}/{file}", "r") as f:
                 questions = json.load(f)
-                # print(type(questions))
-                # print(questions.keys())
                 _processed_docs = [
                     self.processing.parse_string(
                         " ".join([question["cleaned_body"], question["cleaned_title"]])

@@ -1,8 +1,10 @@
+"""
+:brief: Script to read data from database and save to json file
+"""
+
 import argparse
 import os
-import glob
 import json
-from question import get_question
 from db import Database
 
 import re

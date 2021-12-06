@@ -1,13 +1,14 @@
-# Not complete
-
+"""
+:brief: Create a interface class to communicate with the database
+"""
 import psycopg2
 from psycopg2.extras import execute_values, DictCursor
 from question import Question
 
-
 columns_w_type = [("Body", str),
                   ("CreationDate", str), ("Id", int), ("PostTypeId", int),
-                  ("Tags", str), ("Title", str), ("cleaned_body", str), ("cleaned_title", str), ("body_vec", list),
+                  ("Tags", str), ("Title", str), ("cleaned_body", str),
+                  ("cleaned_title", str), ("body_vec", list),
                   ("title_vec", list), ("dups_list", list), ("tags_list", list),
                   ("topic", list)
                   ]
@@ -17,7 +18,8 @@ cols = [col[0] for col in columns_w_type]
 class Database:
     def __init__(self):
         """Create a Postgres Database interface class"""
-        self.conn = psycopg2.connect(host='localhost', database='core', user='postgres', password='password')
+        self.conn = psycopg2.connect(host='localhost', database='core',
+                                     user='postgres', password='password')
 
     def get_db(self):
         """Get a cursor to manupilate data"""
@@ -115,24 +117,17 @@ class Database:
         self.commit()
         return questions
 
-    # def update_questions(self, questions, new_col):
+    def update_questions(self, questions, new_col):
 
-        # """
-        # Temporary function to merge LDA topic values to the database
-        # """
-    #     query = f"""
-    #     UPDATE questions SET {new_col}=data.{new_col} FROM (VALUES %s) AS data(Id, {new_col}) WHERE questions.Id = data.Id;
-    #     """
-    #     value_list = []
-    #     for q in questions:
-    #         value_list.append((int(q['qid']), list(map(float, q[new_col]))))
-    #     cur = self.get_db()
-    #     execute_values(cur, query, value_list)
-    #     self.commit()
-
-        # def main():
-        #     db = Database()
-        #     db.refresh_questions()
-
-        # if __name__ == '__main__':
-        #     main()
+        """
+        Temporary function to merge LDA topic values to the database
+        """
+        query = f"""
+        UPDATE questions SET {new_col}=data.{new_col} FROM (VALUES %s) AS data(Id, {new_col}) WHERE questions.Id = data.Id;
+        """
+        value_list = []
+        for q in questions:
+            value_list.append((int(q['qid']), list(map(float, q[new_col]))))
+        cur = self.get_db()
+        execute_values(cur, query, value_list)
+        self.commit()

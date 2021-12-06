@@ -1,3 +1,7 @@
+"""
+:brief: To find all the similarity scores for each candidate question per duplicate question
+        To estimate the 4 parameters \alpha, \beta, \gamma and \delta
+"""
 import datetime
 import heapq
 import json
@@ -33,16 +37,16 @@ class Composer:
         # Store a dictionary with 3 things
         # NOTE: Making every qid to int from string
         self.dup_score_details = {
-            qid: {"expected_questions": list(map(int, list_of_dups[qid]["parent_q_list"])), "scores": []}
+            qid: {"expected_questions": list(
+                map(int, list_of_dups[qid]["parent_q_list"])), "scores": []}
             for qid in activate_dup_keys
         }
 
-        
-            # for file in os.listdir(self.question_path):
-            #     if "json" not in file:
-            #         continue
+        # for file in os.listdir(self.question_path):
+        #     if "json" not in file:
+        #         continue
 
-            # print("curr file to be used is ", file)
+        # print("curr file to be used is ", file)
         for i in range(50):
             print(f"File Number {i}")
             with open(f"{self.question_path}/{i}.json", "r") as f:
@@ -65,12 +69,14 @@ class Composer:
 
                         candidate_sorted_id = cand['sort_id']
 
-                        if cand['topic'] is None or cand['Id'] == list_of_dups[curr_dup_id]['Id']:
+                        if cand['topic'] is None or cand['Id'] == \
+                                list_of_dups[curr_dup_id]['Id']:
                             continue
 
                         # if candidate_sorted_id > sort_id_of_dup:
                         #     break
-                        if list_of_dups[curr_dup_id]['CreationDate'] < cand['CreationDate']:
+                        if list_of_dups[curr_dup_id]['CreationDate'] < cand[
+                            'CreationDate']:
                             break
 
                         sim_scores = self.processor.calculate_similarity(
@@ -87,7 +93,7 @@ class Composer:
                                 "topic_score": sim_scores["topics"],
                             }
                         )
-        
+
         with open('dup_score_details_100_test.json', 'w') as f:
             json.dump(self.dup_score_details, f)
 
@@ -139,9 +145,10 @@ class Composer:
             init_params = [random() for _ in range(4)]
 
             for dup_q_id in self.dup_score_details.keys():
-                q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(init_params,
-                                                                         self.dup_score_details[dup_q_id][
-                                                                             "scores"])
+                q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(
+                    init_params,
+                    self.dup_score_details[dup_q_id][
+                        "scores"])
             # score for initial set of params
             init_score = self.evaluation_criteria(q_heaps)
 
@@ -158,9 +165,11 @@ class Composer:
                     # iterate through each duplicate question
                     for dup_q_id in self.dup_score_details.keys():
                         # calculate scores using current set of trial params
-                        q_heaps[dup_q_id] = self.cal_param_scores_for_a_question(params,
-                                                                                 self.dup_score_details[dup_q_id][
-                                                                                     "scores"])
+                        q_heaps[
+                            dup_q_id] = self.cal_param_scores_for_a_question(
+                            params,
+                            self.dup_score_details[dup_q_id][
+                                "scores"])
                     score = self.evaluation_criteria(q_heaps)
 
                     # if score for these sets of parameters is better than best score for this iteration, then update
@@ -192,7 +201,8 @@ class Composer:
         success_denom = len(wanted_q_ids)
         for curr_q_id, curr_heap in q_heaps.items():
             predicted_best = set([x[1] for x in curr_heap])
-            actual_best = self.dup_score_details[curr_q_id]['expected_questions']
+            actual_best = self.dup_score_details[curr_q_id][
+                'expected_questions']
             matched = predicted_best.intersection(actual_best)
             if len(matched):
                 success_num += 1

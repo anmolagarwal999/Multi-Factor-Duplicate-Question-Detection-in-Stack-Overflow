@@ -1,3 +1,6 @@
+"""
+:brief: To create jaccard similarity score for each candidate question per duplicate question
+"""
 import datetime
 import heapq
 import json

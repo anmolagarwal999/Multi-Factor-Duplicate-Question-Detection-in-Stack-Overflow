@@ -1,3 +1,7 @@
+"""
+:brief: Training the jaccard parameter along with \alpha, \beta, \gamma and \delta
+"""
+
 import datetime
 import heapq
 import json
@@ -25,8 +29,6 @@ class Composer:
         print(f"Dups details loaded")
 
     def cal_param_scores_for_a_question(self, params, scores_dict):
-        # dup_id=id_of_dup_q
-        # for this duplicate, calculate 
 
         init_heap = []
 
@@ -137,9 +139,6 @@ class Composer:
 if __name__ == "__main__":
     begin = datetime.datetime.now()
 
-    # sorted = 3000 posts
-    # duplicate path = 300 elements
-    # question_path = folder path where 60 files are stored
     composer = Composer(duplicate_details_path=sys.argv[1])
     composer.load_file()
     best_params, best_score = composer.param_estimation()
