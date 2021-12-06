@@ -45,4 +45,4 @@ ways:
 Proposal
 Doc: [Link](https://gsc2001.notion.site/Multi-Factor-Duplicate-Question-Detection-in-Stack-Overflow-Team-s-proposal-11c7591f65a84b4587f43d050c3eac9b)
 
-Final Report: [Link](https://docs.google.com/document/d/1cKcowAF3yZc1TxleqSyJTxA-wVCbU7RjXA-PBbxbp-c/edit?usp=sharing)
+Final Report: [Link](https://drive.google.com/file/d/1BdFAoppoe1_biCbHYRReMApygoWZLDoa/view?usp=sharing)
