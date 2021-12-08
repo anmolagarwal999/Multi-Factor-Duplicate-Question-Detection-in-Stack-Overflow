@@ -15,7 +15,7 @@ class Tester:
     def __init__(self, score_path=""):
         self.score_path = score_path
         self.dup_score_details = {}
-        self.K = 20  # recall
+        self.K = 10  # recall
         self.errors = {}
         self.random_results = []
 
@@ -94,7 +94,7 @@ class Tester:
         # return a array with 4 tuple values
 
         # best params and score from all restarts
-        best_params = [0.9, 0.85, 0.3152632209444808, 0.3]
+        best_params = [0.49999999999999994, 0.49999999999999994, 0.045457461811456046, 0.44999999999999996]
         test_score = 0
 
         # heaps for each duplicate question which contain top K questions as predicted by algorithm

@@ -60,6 +60,13 @@
 
 ## K = 10
 
+### First 100 questions as training
+
+- Final best score: 0.74
+- Params: [0.49999999999999994, 0.49999999999999994, 0.045457461811456046, 0.44999999999999996]
+  #### Test score
+  - Final best score: 
+
 ### First 300 questions as training
 
 - Final best score: 0.67

@@ -20,7 +20,7 @@ class Composer:
         self.iterations = 10
         self.dup_score_details = {}
         self.N = 400  # number of dups to be considered
-        self.K = 20  # recall
+        self.K = 10  # recall
 
     def duplicate_similarity(self):
 
@@ -125,7 +125,7 @@ class Composer:
     def param_estimation(self):
         """estimates all the parameters of the weighted sum of the components"""
         if len(self.dup_score_details) == 0:
-            with open('dup_score_details_300.json', 'r') as f:
+            with open('dup_score_details.json', 'r') as f:
                 self.dup_score_details = json.load(f)
         # expected output = alpha, beta, gamma, delta
         # return a array with 4 tuple values
@@ -156,7 +156,7 @@ class Composer:
             params = init_params.copy()
 
             # update and try values for each parameter iteratively
-            for i in range(4):
+            for i in tqdm(range(4)):
                 j = 0
                 while j < 1.01:
                     # try each value from 0 to 1
