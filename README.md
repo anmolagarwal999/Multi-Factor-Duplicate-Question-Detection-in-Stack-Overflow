@@ -1,4 +1,4 @@
-# SMAI Final Project
+# Multi-Factor Duplicate Question Detection in Stack Overflow
 
 **Paper Name**: Multi-Factor Duplicate Question Detection in Stack Overflow
 **Project ID**: 26 <br>
@@ -7,7 +7,9 @@
 Priyadarshi <br>
 **Mentor Name**: Sireesha
 
-### Problem Statement
+The project was undertaken as a part of the "Statistical Methods in AI Course", Fall'21 at IIIT-H.
+
+## Problem Statement
 
 There are a large number of questions posted on Stack Overflow (over 2M), with
 3700 new questions posted per day, making the search space for duplicate
@@ -42,7 +44,9 @@ ways:
 - The site moderators will have a smaller sample space to consider candidates
   for duplicates for a newly asked question Q
 
-Proposal
-Doc: [Link](https://gsc2001.notion.site/Multi-Factor-Duplicate-Question-Detection-in-Stack-Overflow-Team-s-proposal-11c7591f65a84b4587f43d050c3eac9b)
+Some relevant files used for training can be found here: https://iiitaphyd-my.sharepoint.com/:f:/g/personal/anmol_agarwal_students_iiit_ac_in/EhbNyyXtUSVFr8ora_gOiPYBDXSarWwQlbpEwM_iPndrYw?e=4XmCPy
 
-Final Report: [Link](https://drive.google.com/file/d/1BdFAoppoe1_biCbHYRReMApygoWZLDoa/view?usp=sharing)
+## Documents:
+Please find the documentation, reports, proposed solutions and conducted experiments in the `docs` folder.
+* Proposal Doc: [Link](https://gsc2001.notion.site/Multi-Factor-Duplicate-Question-Detection-in-Stack-Overflow-Team-s-proposal-11c7591f65a84b4587f43d050c3eac9b)
+* Final Report: [Link](https://drive.google.com/file/d/1BdFAoppoe1_biCbHYRReMApygoWZLDoa/view?usp=sharing)
